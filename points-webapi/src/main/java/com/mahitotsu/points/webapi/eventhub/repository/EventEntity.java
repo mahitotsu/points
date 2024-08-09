@@ -28,16 +28,15 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @NamedQueries({
-        @NamedQuery(name = EventEntity.FETCH_EVENT_HISTORY.NAME, query = EventEntity.FETCH_EVENT_HISTORY.___Q),
-        @NamedQuery(name = EventEntity.FETCH_FIRST_EVENTS.NAME, query = EventEntity.FETCH_FIRST_EVENTS.___Q),
-        @NamedQuery(name = EventEntity.FETCH_LAST_EVENTS.NAME, query = EventEntity.FETCH_LAST_EVENTS.___Q),
+        @NamedQuery(name = EventEntity.FETCH_FROM_HEAD.NAME, query = EventEntity.FETCH_FROM_HEAD.___Q),
+        @NamedQuery(name = EventEntity.FETCH_FROM_TAIL.NAME, query = EventEntity.FETCH_FROM_TAIL.___Q),
 })
 public class EventEntity {
 
     private static final Random SEED = new Random();
 
-    public static interface FETCH_EVENT_HISTORY {
-        String NAME = "Event.fetchEventHistory";
+    public static interface FETCH_FROM_HEAD {
+        String NAME = "Event.fetchFromHead";
         String ___Q = "select e from Event e"
                 + " where eventTime >= :startTime"
                 + " and eventTime < :stopTime"
@@ -47,20 +46,11 @@ public class EventEntity {
                 + " order by id asc";
     }
 
-    public static interface FETCH_FIRST_EVENTS {
-        String NAME = "Event.fetchFirstEvent";
+    public static interface FETCH_FROM_TAIL {
+        String NAME = "Event.fetchFromTail";
         String ___Q = "select e from Event e"
-                + " where eventTime >= :eventTime"
-                + " and targetEntityName = :targetEntityName"
-                + " and eventType = :eventType"
-                + " and targetEntityId = :targetEntityId"
-                + " order by id asc";
-    }
-
-    public static interface FETCH_LAST_EVENTS {
-        String NAME = "Event.fetchLastEvent";
-        String ___Q = "select e from Event e"
-                + " where eventTime <= :eventTime"
+                + " where eventTime <= :startTime"
+                + " and eventTime > :stopTime"
                 + " and targetEntityName = :targetEntityName"
                 + " and eventType = :eventType"
                 + " and targetEntityId = :targetEntityId"

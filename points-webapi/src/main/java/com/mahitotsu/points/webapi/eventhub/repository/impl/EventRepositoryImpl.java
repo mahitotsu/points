@@ -27,46 +27,15 @@ public class EventRepositoryImpl implements EventRepository {
     public Stream<EventEntity> fetchEventHistory(final String targetEntityName, final String targetEntityId,
             final String eventType, final long startTime, final long stopTime, final int maxResult) {
 
-        return EntityManagerUtils.getEntityStream(this.entityManager, EventEntity.class,
-                EventEntity.FETCH_EVENT_HISTORY.NAME,
+        return EntityManagerUtils.getEntityStream(
+                this.entityManager, EventEntity.class,
+                stopTime - startTime < 0 ? EventEntity.FETCH_FROM_TAIL.NAME : EventEntity.FETCH_FROM_HEAD.NAME,
                 MapUtils.builder(new HashMap<String, Object>())
                         .put("targetEntityName", targetEntityName)
                         .put("targetEntityId", targetEntityId)
                         .put("eventType", eventType)
                         .put("startTime", startTime)
                         .put("stopTime", stopTime)
-                        .build(),
-                maxResult);
-    }
-
-    @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchFirstEvents(final String targetEntityName, final String targetEntityId,
-            final String eventType, final long startTime, final int maxResult) {
-
-        return EntityManagerUtils.getEntityStream(this.entityManager, EventEntity.class,
-                EventEntity.FETCH_FIRST_EVENTS.NAME,
-                MapUtils.builder(new HashMap<String, Object>())
-                        .put("targetEntityName", targetEntityName)
-                        .put("targetEntityId", targetEntityId)
-                        .put("eventType", eventType)
-                        .put("startTime", startTime)
-                        .build(),
-                maxResult);
-    }
-
-    @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchLastEvents(final String targetEntityName, final String targetEntityId,
-            final String eventType, final long stopTime, final int maxResult) {
-
-        return EntityManagerUtils.getEntityStream(this.entityManager, EventEntity.class,
-                EventEntity.FETCH_LAST_EVENTS.NAME,
-                MapUtils.builder(new HashMap<String, Object>())
-                        .put("targetEntityName", targetEntityName)
-                        .put("targetEntityId", targetEntityId)
-                        .put("eventType", eventType)
-                        .put("startTime", stopTime)
                         .build(),
                 maxResult);
     }
