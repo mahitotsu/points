@@ -1,0 +1,14 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "points-webapi"
+        }
+    ],
+    "settings": {
+        "java.compile.nullAnalysis.mode": "automatic"
+    }
+}
+
