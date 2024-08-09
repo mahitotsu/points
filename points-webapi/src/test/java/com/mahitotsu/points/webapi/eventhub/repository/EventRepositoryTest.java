@@ -48,7 +48,7 @@ public class EventRepositoryTest extends TestBase {
 
         // fetch from first to last
         eventList = this.doInROTx(() -> this.eventRepository
-                .fetchEventHistory(targetEntityName, targetEntityId, eventType, beforeTime, afterTime + 1, -1)
+                .fetchEvents(targetEntityName, targetEntityId, eventType, beforeTime, afterTime + 1, -1)
                 .collect(Collectors.toList()));
         assertEquals(size, eventList.size());
 
@@ -64,7 +64,7 @@ public class EventRepositoryTest extends TestBase {
 
         // fetch from last to first
         eventList = this.doInROTx(() -> this.eventRepository
-                .fetchEventHistory(targetEntityName, targetEntityId, eventType, afterTime, beforeTime - 1, -1)
+                .fetchEvents(targetEntityName, targetEntityId, eventType, afterTime, beforeTime - 1, -1)
                 .collect(Collectors.toList()));
         assertEquals(size, eventList.size());
 
@@ -91,7 +91,7 @@ public class EventRepositoryTest extends TestBase {
         this.eventRepository.putEvent(targetEntityName, targetEntityId, eventType, payload);
         final long stopTime = System.currentTimeMillis() + 1;
 
-        final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEventHistory(targetEntityName,
+        final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
                 targetEntityId, eventType, startTime, stopTime, -1).findFirst().get());
 
         final Object actual = event.getPayload();
@@ -111,7 +111,7 @@ public class EventRepositoryTest extends TestBase {
         this.eventRepository.putEvent(targetEntityName, targetEntityId, eventType, payload);
         final long stopTime = System.currentTimeMillis() + 1;
 
-        final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEventHistory(targetEntityName,
+        final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
                 targetEntityId, eventType, startTime, stopTime, -1).findFirst().get());
 
         final Object actual = event.getPayload();
@@ -131,7 +131,7 @@ public class EventRepositoryTest extends TestBase {
         this.eventRepository.putEvent(targetEntityName, targetEntityId, eventType, payload);
         final long stopTime = System.currentTimeMillis() + 1;
 
-        final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEventHistory(targetEntityName,
+        final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
                 targetEntityId, eventType, startTime, stopTime, -1).findFirst().get());
 
         final Object actual = event.getPayload();

@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 
 public interface EventRepository {
 
-    Stream<EventEntity> fetchEventHistory(String targetEntityName, String targetEntityId,
+    Stream<EventEntity> fetchEvents(String targetEntityName, String targetEntityId,
             String eventType, long fromTime, long toTime, int maxResult);
 
     UUID putEvent(String targetEntityName, String targetEntityId, String eventType,

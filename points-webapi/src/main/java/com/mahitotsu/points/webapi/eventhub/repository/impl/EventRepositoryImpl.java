@@ -24,7 +24,7 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchEventHistory(final String targetEntityName, final String targetEntityId,
+    public Stream<EventEntity> fetchEvents(final String targetEntityName, final String targetEntityId,
             final String eventType, final long startTime, final long stopTime, final int maxResult) {
 
         return EntityManagerUtils.getEntityStream(
