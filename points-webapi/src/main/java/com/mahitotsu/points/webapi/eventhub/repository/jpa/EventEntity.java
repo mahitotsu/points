@@ -1,4 +1,4 @@
-package com.mahitotsu.points.webapi.eventhub.repository;
+package com.mahitotsu.points.webapi.eventhub.repository.jpa;
 
 import java.util.Random;
 import java.util.UUID;

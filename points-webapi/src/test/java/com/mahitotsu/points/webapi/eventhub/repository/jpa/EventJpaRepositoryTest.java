@@ -1,4 +1,4 @@
-package com.mahitotsu.points.webapi.eventhub.repository;
+package com.mahitotsu.points.webapi.eventhub.repository.jpa;
 
 import static org.junit.Assert.*;
 
@@ -15,7 +15,7 @@ import com.mahitotsu.points.webapi.TestBase;
 
 import lombok.Value;
 
-public class EventRepositoryTest extends TestBase {
+public class EventJpaRepositoryTest extends TestBase {
 
     @Value
     private class PayloadBean {
@@ -23,7 +23,7 @@ public class EventRepositoryTest extends TestBase {
     }
 
     @Autowired
-    private EventRepository eventRepository;
+    private EventJpaRepository eventRepository;
 
     @Test
     public void testPutAndFetchEvents() {

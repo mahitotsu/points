@@ -1,4 +1,4 @@
-package com.mahitotsu.points.webapi.eventhub.repository.impl;
+package com.mahitotsu.points.webapi.eventhub.repository.jpa;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -9,20 +9,17 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mahitotsu.points.webapi.eventhub.repository.EventEntity;
-import com.mahitotsu.points.webapi.eventhub.repository.EventRepository;
 import com.mahitotsu.points.webapi.utils.EntityManagerUtils;
 import com.mahitotsu.points.webapi.utils.MapUtils;
 
 import jakarta.persistence.EntityManager;
 
 @Repository
-public class EventRepositoryImpl implements EventRepository {
+class EventJpaRepository {
 
     @Autowired
     private EntityManager entityManager;
 
-    @Override
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
     public Stream<EventEntity> fetchEvents(final String targetEntityName, final String targetEntityId,
             final String eventType, final long startTime, final long stopTime, final int maxResult) {
@@ -40,7 +37,6 @@ public class EventRepositoryImpl implements EventRepository {
                 maxResult);
     }
 
-    @Override
     @Transactional
     public UUID putEvent(final String targetEntityName, final String targetEntityId, final String eventType,
             final Object paylaod) {
