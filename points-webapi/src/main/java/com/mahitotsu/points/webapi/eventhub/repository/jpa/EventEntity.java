@@ -32,7 +32,7 @@ public class EventEntity {
     EventEntity() {
     }
 
-    public EventEntity(final String targetEntityName, final String targetEntityId, final String eventType,
+    public EventEntity(final String targetEntityName, final UUID targetEntityId, final String eventType,
             final Object payload) {
         this.targetEntityName = targetEntityName;
         this.targetEntityId = targetEntityId;
@@ -48,7 +48,7 @@ public class EventEntity {
     private String targetEntityName;
 
     @Column(nullable = false, updatable = false)
-    private String targetEntityId;
+    private UUID targetEntityId;
 
     @Column(nullable = false, updatable = false)
     private String eventType;

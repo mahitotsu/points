@@ -23,21 +23,21 @@ class EventJpaRepository {
     private EntityManager entityManager;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchEvents(final String targetEntityName, final String targetEntityId,
+    public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
             final long startTime, final long stopTime, final int maxResult) {
         return this.fetchEvents(targetEntityName, targetEntityId, Collections.emptySet(), startTime, stopTime,
                 maxResult);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchEvents(final String targetEntityName, final String targetEntityId,
+    public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
             final String eventType, final long startTime, final long stopTime, final int maxResult) {
         return this.fetchEvents(targetEntityName, targetEntityId, Collections.singleton(eventType), startTime, stopTime,
                 maxResult);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchEvents(final String targetEntityName, final String targetEntityId,
+    public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
             final Set<String> eventTypes, final long startTime, final long stopTime, final int maxResult) {
         if (maxResult <= 0) {
             return Collections.<EventEntity>emptySet().stream();
@@ -84,7 +84,7 @@ class EventJpaRepository {
     }
 
     @Transactional
-    public UUID putEvent(final String targetEntityName, final String targetEntityId, final String eventType,
+    public UUID putEvent(final String targetEntityName, final UUID targetEntityId, final String eventType,
             final Object paylaod) {
 
         final EventEntity event = new EventEntity(targetEntityName, targetEntityId, eventType, paylaod);
