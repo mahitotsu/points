@@ -48,7 +48,7 @@ public class EventJpaRepositoryTest extends TestBase {
 
         // fetch from first to last
         eventList = this.doInROTx(() -> this.eventRepository
-                .fetchEvents(targetEntityName, targetEntityId, eventType, beforeTime, afterTime + 1, -1)
+                .fetchEvents(targetEntityName, targetEntityId, eventType, beforeTime, afterTime + 1, Integer.MAX_VALUE)
                 .collect(Collectors.toList()));
         assertEquals(size, eventList.size());
 
@@ -64,7 +64,7 @@ public class EventJpaRepositoryTest extends TestBase {
 
         // fetch from last to first
         eventList = this.doInROTx(() -> this.eventRepository
-                .fetchEvents(targetEntityName, targetEntityId, eventType, afterTime, beforeTime - 1, -1)
+                .fetchEvents(targetEntityName, targetEntityId, eventType, afterTime, beforeTime - 1, Integer.MAX_VALUE)
                 .collect(Collectors.toList()));
         assertEquals(size, eventList.size());
 
@@ -92,7 +92,7 @@ public class EventJpaRepositoryTest extends TestBase {
         final long stopTime = System.currentTimeMillis() + 1;
 
         final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
-                targetEntityId, eventType, startTime, stopTime, -1).findFirst().get());
+                targetEntityId, eventType, startTime, stopTime, Integer.MAX_VALUE).findFirst().get());
 
         final Object actual = event.getPayload();
         assertTrue(Map.class.isInstance(actual));
@@ -112,7 +112,7 @@ public class EventJpaRepositoryTest extends TestBase {
         final long stopTime = System.currentTimeMillis() + 1;
 
         final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
-                targetEntityId, eventType, startTime, stopTime, -1).findFirst().get());
+                targetEntityId, eventType, startTime, stopTime, Integer.MAX_VALUE).findFirst().get());
 
         final Object actual = event.getPayload();
         assertTrue(Map.class.isInstance(actual));
@@ -132,7 +132,7 @@ public class EventJpaRepositoryTest extends TestBase {
         final long stopTime = System.currentTimeMillis() + 1;
 
         final EventEntity event = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
-                targetEntityId, eventType, startTime, stopTime, -1).findFirst().get());
+                targetEntityId, eventType, startTime, stopTime, Integer.MAX_VALUE).findFirst().get());
 
         final Object actual = event.getPayload();
         assertTrue(Map.class.isInstance(actual));

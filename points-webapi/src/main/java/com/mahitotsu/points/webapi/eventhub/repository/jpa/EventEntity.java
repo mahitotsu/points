@@ -10,8 +10,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -22,40 +20,14 @@ import lombok.ToString;
 
 @Entity(name = "Event")
 @Table(indexes = {
-        @Index(columnList = "eventTime,targetEntityName,eventType,targetEntityId")
+        @Index(columnList = "eventTime, targetEntityName, targetEntityId,eventType")
 })
 @Getter
 @ToString
 @EqualsAndHashCode
-@NamedQueries({
-        @NamedQuery(name = EventEntity.FETCH_FROM_HEAD.NAME, query = EventEntity.FETCH_FROM_HEAD.___Q),
-        @NamedQuery(name = EventEntity.FETCH_FROM_TAIL.NAME, query = EventEntity.FETCH_FROM_TAIL.___Q),
-})
 public class EventEntity {
 
     private static final Random SEED = new Random();
-
-    public static interface FETCH_FROM_HEAD {
-        String NAME = "Event.fetchFromHead";
-        String ___Q = "select e from Event e"
-                + " where eventTime >= :startTime"
-                + " and eventTime < :stopTime"
-                + " and targetEntityName = :targetEntityName"
-                + " and eventType = :eventType"
-                + " and targetEntityId = :targetEntityId"
-                + " order by id asc";
-    }
-
-    public static interface FETCH_FROM_TAIL {
-        String NAME = "Event.fetchFromTail";
-        String ___Q = "select e from Event e"
-                + " where eventTime <= :startTime"
-                + " and eventTime > :stopTime"
-                + " and targetEntityName = :targetEntityName"
-                + " and eventType = :eventType"
-                + " and targetEntityId = :targetEntityId"
-                + " order by id desc";
-    }
 
     EventEntity() {
     }
