@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.mahitotsu.points.webapi.eventhub.repository.Event;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
@@ -31,14 +33,15 @@ class EventJpaRepository {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
     public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
-            final String eventType, final long startTime, final long stopTime, final int maxResult) {
+            final Class<? extends Event> eventType, final long startTime, final long stopTime, final int maxResult) {
         return this.fetchEvents(targetEntityName, targetEntityId, Collections.singleton(eventType), startTime, stopTime,
                 maxResult);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
     public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
-            final Set<String> eventTypes, final long startTime, final long stopTime, final int maxResult) {
+            final Set<Class<? extends Event>> eventTypes, final long startTime, final long stopTime,
+            final int maxResult) {
         if (maxResult <= 0) {
             return Collections.<EventEntity>emptySet().stream();
         }
@@ -84,8 +87,9 @@ class EventJpaRepository {
     }
 
     @Transactional
-    public UUID putEvent(final String targetEntityName, final UUID targetEntityId, final String eventType,
-            final Object paylaod) {
+    public <T extends Event> UUID putEvent(final String targetEntityName, final UUID targetEntityId,
+            final Class<T> eventType,
+            final T paylaod) {
 
         final EventEntity event = new EventEntity(targetEntityName, targetEntityId, eventType, paylaod);
         this.entityManager.persist(event);

@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.hibernate.annotations.Type;
 
+import com.mahitotsu.points.webapi.eventhub.repository.Event;
+
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,12 +34,13 @@ public class EventEntity {
     EventEntity() {
     }
 
-    public EventEntity(final String targetEntityName, final UUID targetEntityId, final String eventType,
-            final Object payload) {
+    public <T extends Event> EventEntity(final String targetEntityName, final UUID targetEntityId,
+            final Class<T> eventType,
+            final T event) {
         this.targetEntityName = targetEntityName;
         this.targetEntityId = targetEntityId;
         this.eventType = eventType;
-        this.payload = payload;
+        this.event = event;
     }
 
     @Id
@@ -51,11 +54,11 @@ public class EventEntity {
     private UUID targetEntityId;
 
     @Column(nullable = false, updatable = false)
-    private String eventType;
+    private Class<? extends Event> eventType;
 
     @Type(JsonBinaryType.class)
     @Column(nullable = false, updatable = false, columnDefinition = "jsonb")
-    private Object payload;
+    private Event event;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
