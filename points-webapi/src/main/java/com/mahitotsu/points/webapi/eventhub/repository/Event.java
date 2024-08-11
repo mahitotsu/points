@@ -12,6 +12,6 @@ import lombok.ToString;
 @Data
 @ToString
 @EqualsAndHashCode
-public abstract class Event {
+public class Event {
 
 }

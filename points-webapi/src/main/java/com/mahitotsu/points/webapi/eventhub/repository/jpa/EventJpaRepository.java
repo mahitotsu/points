@@ -3,6 +3,7 @@ package com.mahitotsu.points.webapi.eventhub.repository.jpa;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -23,6 +24,13 @@ class EventJpaRepository {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
+    public Optional<EventEntity> fetchLastEvent(final String targetEntityName, final UUID targetEntityId,
+            final Class<? extends Event> eventType, final long eventTime) {
+        return this.fetchEvents(targetEntityName, targetEntityId, eventType, eventTime, -1, 1)
+                .findFirst();
+    }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
     public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
@@ -87,12 +95,10 @@ class EventJpaRepository {
     }
 
     @Transactional
-    public <T extends Event> UUID putEvent(final String targetEntityName, final UUID targetEntityId,
-            final Class<T> eventType,
-            final T paylaod) {
+    public <T extends Event> UUID putEvent(final String targetEntityName, final UUID targetEntityId, final T event) {
 
-        final EventEntity event = new EventEntity(targetEntityName, targetEntityId, eventType, paylaod);
-        this.entityManager.persist(event);
-        return event.getId();
+        final EventEntity entity = new EventEntity(targetEntityName, targetEntityId, event);
+        this.entityManager.persist(entity);
+        return entity.getId();
     }
 }

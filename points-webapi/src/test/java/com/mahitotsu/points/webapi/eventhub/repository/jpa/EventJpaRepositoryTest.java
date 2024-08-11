@@ -19,46 +19,35 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import lombok.Value;
 
 public class EventJpaRepositoryTest extends TestBase {
 
     @Data
-    @ToString(callSuper = true)
-    @EqualsAndHashCode(callSuper = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @ToString(callSuper = true)
+    @EqualsAndHashCode(callSuper = true)
     public static class TestEvent extends Event {
         private String payload;
     }
 
     @Data
-    @ToString(callSuper = true)
-    @EqualsAndHashCode(callSuper = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @ToString(callSuper = true)
+    @EqualsAndHashCode(callSuper = true)
     public static class TestEvent1 extends Event {
         private int count;
         private boolean active;
     }
 
     @Data
-    @ToString(callSuper = true)
-    @EqualsAndHashCode(callSuper = true)
     @NoArgsConstructor
     @AllArgsConstructor
+    @ToString(callSuper = true)
+    @EqualsAndHashCode(callSuper = true)
     public static class TestEvent2 extends Event {
         private String[] items;
-    }
-
-    @Value
-    public class PayloadBean1 {
-        private final String key;
-    }
-
-    @Value
-    public class PayloadBean2 {
-        private final String body;
     }
 
     @Autowired
@@ -70,13 +59,11 @@ public class EventJpaRepositoryTest extends TestBase {
         final int size = 10;
         final String targetEntityName = "TestEntity";
         final UUID targetEntityId = UUID.randomUUID();
-        final Class<TestEvent> eventType = TestEvent.class;
 
         final long beforeTime = System.currentTimeMillis();
         IntStream.range(0, size)
-                .forEach(
-                        i -> this.eventRepository.putEvent(targetEntityName, targetEntityId, eventType,
-                                new TestEvent("value")));
+                .forEach(i -> this.eventRepository.putEvent(targetEntityName, targetEntityId,
+                        new TestEvent(String.format("%02d", i))));
         final long afterTime = System.currentTimeMillis();
 
         List<EventEntity> eventList;
@@ -85,33 +72,35 @@ public class EventJpaRepositoryTest extends TestBase {
 
         // fetch from first to last
         eventList = this.doInROTx(() -> this.eventRepository
-                .fetchEvents(targetEntityName, targetEntityId, eventType, beforeTime, afterTime + 1, Integer.MAX_VALUE)
+                .fetchEvents(targetEntityName, targetEntityId, beforeTime, afterTime + 1,
+                        Integer.MAX_VALUE)
                 .collect(Collectors.toList()));
         assertEquals(size, eventList.size());
 
         id = null;
         eventTime = beforeTime;
-        for (final EventEntity event : eventList) {
-            assertTrue(id == null || id.compareTo(event.getId()) < 0);
-            assertTrue(eventTime - event.getEventTime() <= 0);
-            id = event.getId();
-            eventTime = event.getEventTime();
+        for (final EventEntity entity : eventList) {
+            assertTrue(id == null || id.compareTo(entity.getId()) < 0);
+            assertTrue(eventTime - entity.getEventTime() <= 0);
+            id = entity.getId();
+            eventTime = entity.getEventTime();
         }
         assertTrue(eventTime - afterTime <= 0);
 
         // fetch from last to first
         eventList = this.doInROTx(() -> this.eventRepository
-                .fetchEvents(targetEntityName, targetEntityId, eventType, afterTime, beforeTime - 1, Integer.MAX_VALUE)
+                .fetchEvents(targetEntityName, targetEntityId, afterTime, beforeTime - 1,
+                        Integer.MAX_VALUE)
                 .collect(Collectors.toList()));
         assertEquals(size, eventList.size());
 
         id = null;
         eventTime = afterTime;
-        for (final EventEntity event : eventList) {
-            assertTrue(id == null || id.compareTo(event.getId()) > 0);
-            assertTrue(eventTime - event.getEventTime() >= 0);
-            id = event.getId();
-            eventTime = event.getEventTime();
+        for (final EventEntity entity : eventList) {
+            assertTrue(id == null || id.compareTo(entity.getId()) > 0);
+            assertTrue(eventTime - entity.getEventTime() >= 0);
+            id = entity.getId();
+            eventTime = entity.getEventTime();
         }
         assertTrue(eventTime - beforeTime >= 0);
     }
@@ -125,8 +114,8 @@ public class EventJpaRepositoryTest extends TestBase {
         final TestEvent2 event2 = new TestEvent2(new String[] { "A", "b" });
 
         final long startTime = System.currentTimeMillis();
-        this.eventRepository.putEvent(targetEntityName, targetEntityId, TestEvent1.class, event1);
-        this.eventRepository.putEvent(targetEntityName, targetEntityId, TestEvent2.class, event2);
+        this.eventRepository.putEvent(targetEntityName, targetEntityId, event1);
+        this.eventRepository.putEvent(targetEntityName, targetEntityId, event2);
         final long stopTime = System.currentTimeMillis() + 1;
 
         final List<EventEntity> eventList = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
@@ -151,8 +140,8 @@ public class EventJpaRepositoryTest extends TestBase {
         final TestEvent2 event2 = new TestEvent2(new String[] { "A", "b" });
 
         final long startTime = System.currentTimeMillis();
-        this.eventRepository.putEvent(targetEntityName, targetEntityId, TestEvent1.class, event1);
-        this.eventRepository.putEvent(targetEntityName, targetEntityId, TestEvent2.class, event2);
+        this.eventRepository.putEvent(targetEntityName, targetEntityId, event1);
+        this.eventRepository.putEvent(targetEntityName, targetEntityId, event2);
         final long stopTime = System.currentTimeMillis() + 1;
 
         final List<EventEntity> eventList = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
@@ -178,8 +167,8 @@ public class EventJpaRepositoryTest extends TestBase {
         final TestEvent2 event2 = new TestEvent2(new String[] { "A", "b" });
 
         final long startTime = System.currentTimeMillis();
-        this.eventRepository.putEvent(targetEntityName, targetEntityId, TestEvent1.class, event1);
-        this.eventRepository.putEvent(targetEntityName, targetEntityId, TestEvent2.class,event2);
+        this.eventRepository.putEvent(targetEntityName, targetEntityId, event1);
+        this.eventRepository.putEvent(targetEntityName, targetEntityId, event2);
         final long stopTime = System.currentTimeMillis() + 1;
 
         final List<EventEntity> firstList = this.doInROTx(() -> this.eventRepository.fetchEvents(targetEntityName,
@@ -199,5 +188,25 @@ public class EventJpaRepositoryTest extends TestBase {
         final EventEntity second = secondList.get(0);
         assertEquals(TestEvent2.class, second.getEventType());
         assertEquals(event2, second.getEvent());
+    }
+
+    @Test
+    public void testFetchLastEvent() {
+
+        final int size = 10;
+        final String targetEntityName = "TestEntity";
+        final UUID targetEntityId = UUID.randomUUID();
+
+        final List<UUID> eventIdList = IntStream.range(0, size)
+                .mapToObj(i -> this.eventRepository.putEvent(targetEntityName, targetEntityId,
+                        new TestEvent(String.format("%02d", i))))
+                .collect(Collectors.toList());
+
+        final EventEntity lastEvent = this.doInROTx(() -> this.eventRepository
+                .fetchLastEvent(targetEntityName, targetEntityId, TestEvent.class, System.currentTimeMillis())
+                .orElseGet(null));
+        assertNotNull(lastEvent);
+        assertEquals(eventIdList.get(size - 1), lastEvent.getId());
+        assertEquals(String.format("%02d", size - 1), TestEvent.class.cast(lastEvent.getEvent()).getPayload());
     }
 }

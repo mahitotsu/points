@@ -34,12 +34,10 @@ public class EventEntity {
     EventEntity() {
     }
 
-    public <T extends Event> EventEntity(final String targetEntityName, final UUID targetEntityId,
-            final Class<T> eventType,
-            final T event) {
+    public <T extends Event> EventEntity(final String targetEntityName, final UUID targetEntityId, final T event) {
         this.targetEntityName = targetEntityName;
         this.targetEntityId = targetEntityId;
-        this.eventType = eventType;
+        this.eventType = event.getClass();
         this.event = event;
     }
 
