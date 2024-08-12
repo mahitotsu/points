@@ -1,11 +1,13 @@
-package com.mahitotsu.points.webapi.eventhub.repository.jpa;
+package com.mahitotsu.points.webapi.eventhub;
 
 import java.util.Random;
 import java.util.UUID;
 
 import org.hibernate.annotations.Type;
 
-import com.mahitotsu.points.webapi.eventhub.repository.Event;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.mahitotsu.points.webapi.domainobj.DomainObject;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
@@ -19,26 +21,39 @@ import jakarta.persistence.TemporalType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
 
 @Entity(name = "Event")
 @Table(indexes = {
-        @Index(columnList = "eventTime, targetEntityName, targetEntityId,eventType")
+        @Index(columnList = "eventTime, targetObjectType, targetObjectId, payloadType")
 })
 @Getter
 @ToString
 @EqualsAndHashCode
 public class EventEntity {
 
+    @JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.CLASS, include = As.PROPERTY, property = "class")
+    @SuperBuilder
+    @Jacksonized
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    public static class Payload {
+
+    }
+
     private static final Random SEED = new Random();
 
     EventEntity() {
     }
 
-    public <T extends Event> EventEntity(final String targetEntityName, final UUID targetEntityId, final T event) {
-        this.targetEntityName = targetEntityName;
-        this.targetEntityId = targetEntityId;
-        this.eventType = event.getClass();
-        this.event = event;
+    public <P extends Payload> EventEntity(final Class<? extends DomainObject> targetObjectType,
+            final UUID targetObjectId, final P payload) {
+        this.targetObjectType = targetObjectType;
+        this.targetObjectId = targetObjectId;
+        this.payloadType = payload.getClass();
+        this.payload = payload;
     }
 
     @Id
@@ -46,17 +61,17 @@ public class EventEntity {
     private UUID id;
 
     @Column(nullable = false, updatable = false)
-    private String targetEntityName;
+    private Class<? extends DomainObject> targetObjectType;
 
     @Column(nullable = false, updatable = false)
-    private UUID targetEntityId;
+    private UUID targetObjectId;
 
     @Column(nullable = false, updatable = false)
-    private Class<? extends Event> eventType;
+    private Class<? extends Payload> payloadType;
 
     @Type(JsonBinaryType.class)
     @Column(nullable = false, updatable = false, columnDefinition = "jsonb")
-    private Event event;
+    private Payload payload;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)

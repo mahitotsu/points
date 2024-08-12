@@ -1,4 +1,4 @@
-package com.mahitotsu.points.webapi.eventhub.repository.jpa;
+package com.mahitotsu.points.webapi.eventhub;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,42 +13,46 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mahitotsu.points.webapi.eventhub.repository.Event;
+import com.mahitotsu.points.webapi.domainobj.DomainObject;
+import com.mahitotsu.points.webapi.eventhub.EventEntity.Payload;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
 
 @Repository
-class EventJpaRepository {
+public class EventRepository {
 
     @Autowired
     private EntityManager entityManager;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Optional<EventEntity> fetchLastEvent(final String targetEntityName, final UUID targetEntityId,
-            final Class<? extends Event> eventType, final long eventTime) {
-        return this.fetchEvents(targetEntityName, targetEntityId, eventType, eventTime, -1, 1)
+    public Optional<EventEntity> fetchLastEvent(final Class<? extends DomainObject> targetObjectType,
+            final UUID targetObjectId, final Class<? extends Payload> payloadType, final long eventTime) {
+        return this.fetchEvents(targetObjectType, targetObjectId, payloadType, eventTime, -1, 1)
                 .findFirst();
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
-            final long startTime, final long stopTime, final int maxResult) {
-        return this.fetchEvents(targetEntityName, targetEntityId, Collections.emptySet(), startTime, stopTime,
+    public Stream<EventEntity> fetchEvents(final Class<? extends DomainObject> targetObjectType,
+            final UUID targetObjectId, final long startTime, final long stopTime, final int maxResult) {
+        return this.fetchEvents(targetObjectType, targetObjectId, Collections.emptySet(), startTime, stopTime,
                 maxResult);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
-            final Class<? extends Event> eventType, final long startTime, final long stopTime, final int maxResult) {
-        return this.fetchEvents(targetEntityName, targetEntityId, Collections.singleton(eventType), startTime, stopTime,
-                maxResult);
+    public Stream<EventEntity> fetchEvents(final Class<? extends DomainObject> targetObjectType,
+            final UUID targetObjectId,
+            final Class<? extends Payload> payloadType, final long startTime, final long stopTime,
+            final int maxResult) {
+        return this.fetchEvents(targetObjectType, targetObjectId, Collections.singleton(payloadType), startTime,
+                stopTime, maxResult);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
-    public Stream<EventEntity> fetchEvents(final String targetEntityName, final UUID targetEntityId,
-            final Set<Class<? extends Event>> eventTypes, final long startTime, final long stopTime,
+    public Stream<EventEntity> fetchEvents(final Class<? extends DomainObject> targetObjectType,
+            final UUID targetObjectId,
+            final Set<Class<? extends Payload>> payloadTypes, final long startTime, final long stopTime,
             final int maxResult) {
         if (maxResult <= 0) {
             return Collections.<EventEntity>emptySet().stream();
@@ -68,19 +72,19 @@ class EventJpaRepository {
         params.put("startTime", startTime);
         params.put("stopTime", stopTime);
 
-        if (targetEntityName != null) {
-            sqlStatement.append(" and e.targetEntityName = :targetEntityName");
-            params.put("targetEntityName", targetEntityName);
+        if (targetObjectType != null) {
+            sqlStatement.append(" and e.targetObjectType = :targetObjectType");
+            params.put("targetObjectType", targetObjectType);
         }
 
-        if (targetEntityId != null) {
-            sqlStatement.append(" and e.targetEntityId = :targetEntityId");
-            params.put("targetEntityId", targetEntityId);
+        if (targetObjectId != null) {
+            sqlStatement.append(" and e.targetObjectId = :targetObjectId");
+            params.put("targetObjectId", targetObjectId);
         }
 
-        if (eventTypes != null && eventTypes.isEmpty() == false) {
-            sqlStatement.append(" and e.eventType in :eventTypes");
-            params.put("eventTypes", eventTypes);
+        if (payloadTypes != null && payloadTypes.isEmpty() == false) {
+            sqlStatement.append(" and e.payloadType in :payloadTypes");
+            params.put("payloadTypes", payloadTypes);
         }
 
         sqlStatement.append(" order by e.id " + (direction >= 0 ? "asc" : "desc"));
@@ -95,9 +99,10 @@ class EventJpaRepository {
     }
 
     @Transactional
-    public <T extends Event> UUID putEvent(final String targetEntityName, final UUID targetEntityId, final T event) {
+    public <T extends Payload> UUID putEvent(final Class<? extends DomainObject> targetObjectType,
+            final UUID targetObjectId, final T event) {
 
-        final EventEntity entity = new EventEntity(targetEntityName, targetEntityId, event);
+        final EventEntity entity = new EventEntity(targetObjectType, targetObjectId, event);
         this.entityManager.persist(entity);
         return entity.getId();
     }
