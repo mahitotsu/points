@@ -11,7 +11,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Repository;
 
-@DataJpaTest(includeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = { Repository.class }))
+import com.mahitotsu.points.webapi.account.repository.AccountEntity.Status;
+
+@DataJpaTest(includeFilters = {
+        @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = { Repository.class })
+})
 public class AccountRepositoryTest {
 
     @Autowired
@@ -20,15 +24,25 @@ public class AccountRepositoryTest {
     @Test
     public void testCRUDAccount() {
 
-        final UUID id = this.accountRepository.create((account) -> account.setPoints(100));
+        final UUID id = this.accountRepository.create((account) -> {
+            assertNotNull(account);
+            assertEquals(Status.OPENED, account.getStatus());
+            assertEquals(0, account.getPoints());
+            account.setPoints(100);
+            assertEquals(100, account.getPoints());
+        });
         assertNotNull(id);
 
         final AccountEntity a1 = this.accountRepository.read(id);
         assertNotNull(a1);
-        assertEquals(AccountEntity.Status.OPENED, a1.getStatus());
+        assertEquals(Status.OPENED, a1.getStatus());
         assertEquals(100, a1.getPoints());
 
-        this.accountRepository.update(id, (account) -> account.setPoints(200));
+        this.accountRepository.update(id, (account) -> {
+            assertNotNull(account);
+            assertEquals(100, account.getPoints());
+            account.setPoints(200);
+        });
 
         final AccountEntity a2 = this.accountRepository.read(id);
         assertNotNull(a2);

@@ -10,6 +10,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Version;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,10 +42,16 @@ public class EntityBase implements Persistable<UUID> {
     }
 
     @PrePersist
-    protected void setup() {
+    protected final void prePersist() {
         final long now = System.currentTimeMillis();
         id = new UUID(now, SEED.nextLong());
         createdAt = Instant.ofEpochMilli(now);
         lastModifiedAt = createdAt;
+    }
+
+    @PreUpdate
+    protected final void preUpdate() {
+        final long now = System.currentTimeMillis();
+        lastModifiedAt = Instant.ofEpochMilli(now);
     }
 }
