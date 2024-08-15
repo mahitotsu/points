@@ -2,16 +2,12 @@ package com.mahitotsu.points.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.Id;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 @Entity(name = "SequentialNumber")
-@Table(indexes = {
-        @Index(columnList = "name")
-})
 @Getter
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
@@ -22,7 +18,12 @@ public class SequentialNumberEntity extends EntityBase {
         this.value = initialValue;
     }
 
-    @Column(nullable = false, unique = true, updatable = false)
+    protected SequentialNumberEntity() {
+        // for jpa
+    }
+
+    @Id
+    @Column(nullable = false, updatable = false)
     private String name;
 
     @Column(nullable = false)
