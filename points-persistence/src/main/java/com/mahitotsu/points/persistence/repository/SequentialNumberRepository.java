@@ -1,4 +1,4 @@
-package com.mahitotsu.points.persistence;
+package com.mahitotsu.points.persistence.repository;
 
 import javax.sql.DataSource;
 

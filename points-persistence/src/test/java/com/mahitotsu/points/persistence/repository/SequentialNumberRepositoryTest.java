@@ -1,11 +1,12 @@
-package com.mahitotsu.points.persistence;
+package com.mahitotsu.points.persistence.repository;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
+@Sql({ "/test-queries/create-test-sequences.sql" })
 public class SequentialNumberRepositoryTest extends RepositoryTestBase {
 
     public static final String TEST_SEQ_1 = "testseq_1";
@@ -15,7 +16,6 @@ public class SequentialNumberRepositoryTest extends RepositoryTestBase {
     private SequentialNumberRepository sequentialNumberRepository;
 
     @Test
-    @Sql({ "/test-queries/create-test-sequences.sql" })
     public void testIncrementAndGet() {
 
         final long val1 = this.sequentialNumberRepository.incrementAndGet(TEST_SEQ_1);
