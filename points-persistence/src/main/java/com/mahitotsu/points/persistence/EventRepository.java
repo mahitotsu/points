@@ -1,5 +1,6 @@
 package com.mahitotsu.points.persistence;
 
+import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +18,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.PostConstruct;
 
 @Repository
 public class EventRepository {
@@ -26,6 +31,13 @@ public class EventRepository {
     @Autowired
     private DataSource dataSource;
 
+    private ObjectMapper objectMapper;
+
+    @PostConstruct
+    public void setup() {
+        this.objectMapper = new ObjectMapper();
+    }
+
     @Transactional
     public UUID putEvent(final String targetType, final UUID targetId, final String eventType,
             final Object eventPayload) {
@@ -33,15 +45,22 @@ public class EventRepository {
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         new NamedParameterJdbcTemplate(this.dataSource).update("""
                 insert into EVENT_STORE (
-                    TARGET_TYPE, TARGET_ID, EVENT_TYPE
+                    TARGET_TYPE, TARGET_ID, EVENT_TYPE, EVENT_PAYLOAD
                 ) values (
-                    :targetType, :targetId, :eventType
+                    :targetType, :targetId, :eventType, :eventPayload
                 )
                 """,
                 new MapSqlParameterSource()
                         .addValue("targetType", targetType)
                         .addValue("targetId", targetId)
-                        .addValue("eventType", eventType),
+                        .addValue("eventType", eventType)
+                        .addValue("eventPayload", Optional.ofNullable(eventPayload).map(p -> {
+                            try {
+                                return this.objectMapper.writeValueAsString(p);
+                            } catch (JsonProcessingException e) {
+                                throw new IllegalStateException(e);
+                            }
+                        }).orElse(null), Types.OTHER, "jsonb"),
                 keyHolder, new String[] { "event_id" });
 
         return keyHolder.getKeyAs(UUID.class);
@@ -64,11 +83,19 @@ public class EventRepository {
             final UUID targetId) {
 
         return new NamedParameterJdbcTemplate(this.dataSource).queryForList("""
-                select * from EVENT_STORE e
-                where e.EVENT_ID >= :fromEventId
-                    and e.EVENT_ID < :toEventId
-                    and e.EVENT_TYPE = :eventType
-                    and e.TARGET_ID = :targetId
+                select
+                    e.EVENT_ID,
+                    e.EVENT_TYPE,
+                    e.TARGET_TYPE,
+                    e.TARGET_ID,
+                    e.EVENT_PAYLOAD::varchar
+                from
+                    EVENT_STORE e
+                where
+                    e.EVENT_ID >= :fromEventId and
+                    e.EVENT_ID < :toEventId and
+                    e.EVENT_TYPE = :eventType and
+                    e.TARGET_ID = :targetId
                 """,
                 new MapSqlParameterSource()
                         .addValue("fromEventId", this.buildUUID(fromMills))
