@@ -1,9 +1,11 @@
 package com.mahitotsu.points.persistence;
 
+import java.io.IOException;
 import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +16,7 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -35,7 +38,8 @@ public class EventRepository {
 
     @PostConstruct
     public void setup() {
-        this.objectMapper = new ObjectMapper();
+        final ObjectMapper objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -80,9 +84,27 @@ public class EventRepository {
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listEvents(final long fromMills, final long toMillis, final String eventType,
-            final UUID targetId) {
+            final UUID targetId, final Class<?> payloadType) {
 
-        return new NamedParameterJdbcTemplate(this.dataSource).queryForList("""
+        final String where = """
+                e.EVENT_ID >= :fromEventId and
+                e.EVENT_ID < :toEventId and
+                e.EVENT_TYPE = :eventType and
+                e.TARGET_ID = :targetId
+                """;
+        final SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("fromEventId", this.buildUUID(fromMills))
+                .addValue("toEventId", this.buildUUID(toMillis))
+                .addValue("targetId", targetId)
+                .addValue("eventType", eventType);
+
+        return this.listEvents(where, parameters, payloadType);
+    }
+
+    private List<Map<String, Object>> listEvents(final String where, final SqlParameterSource parameters,
+            final Class<?> payloadType) {
+
+        return new NamedParameterJdbcTemplate(this.dataSource).query("""
                 select
                     e.EVENT_ID,
                     e.EVENT_TYPE,
@@ -92,16 +114,23 @@ public class EventRepository {
                 from
                     EVENT_STORE e
                 where
-                    e.EVENT_ID >= :fromEventId and
-                    e.EVENT_ID < :toEventId and
-                    e.EVENT_TYPE = :eventType and
-                    e.TARGET_ID = :targetId
-                """,
-                new MapSqlParameterSource()
-                        .addValue("fromEventId", this.buildUUID(fromMills))
-                        .addValue("toEventId", this.buildUUID(toMillis))
-                        .addValue("targetId", targetId)
-                        .addValue("eventType", eventType));
+                """ + where,
+                parameters,
+                (rs, index) -> {
+                    final Map<String, Object> map = new HashMap<>();
+                    map.put("EVENT_ID", rs.getObject(1, UUID.class));
+                    map.put("EVENT_TYPE", rs.getString(2));
+                    map.put("TARGET_TYPE", rs.getString(3));
+                    map.put("TARGET_ID", rs.getObject(4, UUID.class));
+                    map.put("EVENT_PAYLOAD", Optional.ofNullable(rs.getString(5)).map(s -> {
+                        try {
+                            return payloadType == null ? s : this.objectMapper.readValue(s, payloadType);
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }).orElse(null));
+                    return map;
+                });
     }
 
     private UUID buildUUID(final long epochTime) {
