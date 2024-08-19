@@ -56,13 +56,22 @@ public class EventRepository {
     @Transactional(readOnly = true)
     public Optional<EventEntity<?>> findLastEvent(final String eventType, final String targetType,
             final UUID targetId) {
+        return this.findLastEvent(eventType, targetType, targetId, new UUID(Long.MAX_VALUE, Long.MAX_VALUE));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<EventEntity<?>> findLastEvent(final String eventType, final String targetType,
+            final UUID targetId, final UUID beforeId) {
         @SuppressWarnings("unchecked")
         final List<EventEntity<?>> reusltList = this.entityMangaer.createQuery("""
                 select e from Event e
-                where e.eventType = :eventType
+                where e.eventId < :beforeId
+                    and e.eventType = :eventType
                     and e.targetType = :targetType
-                    and e.targetId = :targetId order by e.id desc
-                        """)
+                    and e.targetId = :targetId
+                order by e.id desc
+                """)
+                .setParameter("beforeId", beforeId)
                 .setParameter("eventType", eventType)
                 .setParameter("targetType", targetType)
                 .setParameter("targetId", targetId)

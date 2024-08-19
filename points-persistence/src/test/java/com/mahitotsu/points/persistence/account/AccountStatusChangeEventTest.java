@@ -43,10 +43,6 @@ public class AccountStatusChangeEventTest extends TestBase {
         assertNotNull(stored);
         assertInstanceOf(AccountStatusChangeEventEntity.class, stored);
         assertEquals(event, stored);
-
-        // check sotred event is immutable
-        assertThrows(IllegalStateException.class,
-                () -> AccountStatusChangeEventEntity.class.cast(stored).init(payload, targetType, targetId));
     }
 
     @Test

@@ -4,7 +4,7 @@ import java.beans.ConstructorProperties;
 
 import org.hibernate.annotations.Type;
 
-import com.mahitotsu.points.persistence.account.AccountStatusChangeEventEntity.Payload;
+import com.mahitotsu.points.persistence.account.AccountDepositEventEntity.Payload;
 import com.mahitotsu.points.persistence.eventstore.EventEntity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
@@ -19,17 +19,13 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.Value;
 
-@Entity(name = "AccountStatusChangeEvent")
+@Entity(name = "AccountDepositEvent")
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class AccountStatusChangeEventEntity extends EventEntity<Payload> {
+public class AccountDepositEventEntity extends EventEntity<Payload> {
 
-    public static Payload payload(final Status status) {
-        return new Payload(status);
-    }
-
-    public static enum Status {
-        OPEND, CLOSED,
+    public static Payload paylod(final int amount) {
+        return new Payload(amount);
     }
 
     @Value
@@ -37,13 +33,12 @@ public class AccountStatusChangeEventEntity extends EventEntity<Payload> {
     @EqualsAndHashCode
     public static class Payload {
 
-        @ConstructorProperties({ "status" })
-        public Payload(final Status status) {
-            this.status = status;
+        @ConstructorProperties({ "amount" })
+        public Payload(final int amount) {
+            this.amount = amount;
         }
 
-        @NotNull
-        private Status status;
+        int amount;
     }
 
     @Type(JsonType.class)

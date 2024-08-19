@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import com.mahitotsu.points.persistence.account.AccountStatusChangeEventEntity.Payload;
 import com.mahitotsu.points.persistence.account.AccountStatusChangeEventEntity.Status;
 import com.mahitotsu.points.persistence.eventstore.EventRepository;
 
@@ -57,7 +57,8 @@ public class AccountRepository {
         this.entityManager.persist(account);
 
         final AccountStatusChangeEventEntity statusChangedEvent = new AccountStatusChangeEventEntity();
-        statusChangedEvent.init(new Payload(Status.OPEND), account.getEntityName(), account.getEntityId());
+        statusChangedEvent.init(AccountStatusChangeEventEntity.payload(Status.OPEND), account.getEntityName(),
+                account.getEntityId());
         this.entityManager.persist(statusChangedEvent);
 
         return account;
@@ -67,21 +68,23 @@ public class AccountRepository {
     public void closeAccount(final String branchCode, final String accountNumber) {
 
         final AccountEntity account = this.lockAccount(branchCode, accountNumber, LockModeType.PESSIMISTIC_WRITE);
-        if (account == null) {
+        if (account == null || this.isAccountAvailable(branchCode, accountNumber) == false) {
             return;
         }
 
         final AccountStatusChangeEventEntity statusChangedEvent = new AccountStatusChangeEventEntity();
-        statusChangedEvent.init(new Payload(Status.CLOSED), account.getEntityName(), account.getEntityId());
+        statusChangedEvent.init(AccountStatusChangeEventEntity.payload(Status.CLOSED), account.getEntityName(),
+                account.getEntityId());
         this.entityManager.persist(statusChangedEvent);
     }
 
     @Transactional(readOnly = true)
     public boolean isAccountAvailable(final String branchCode, final String accountNumber) {
 
-        // check only existence.
-        // because you can not get a shared lock with readonly transaction.
-        final AccountEntity account = this.lockAccount(branchCode, accountNumber, LockModeType.NONE);
+        final LockModeType lockMode = TransactionSynchronizationManager.isCurrentTransactionReadOnly()
+                ? LockModeType.NONE
+                : LockModeType.PESSIMISTIC_READ;
+        final AccountEntity account = this.lockAccount(branchCode, accountNumber, lockMode);
         if (account == null) {
             return false;
         }
@@ -91,5 +94,33 @@ public class AccountRepository {
                 account.getEntityName(), account.getEntityId())
                 .map(e -> AccountStatusChangeEventEntity.class.cast(e)).orElse(null);
         return event != null && event.getEventPayload().getStatus() == Status.OPEND;
+    }
+
+    @Transactional
+    public void depositAccount(final String branchCode, final String accountNumber, final int amount) {
+
+        final AccountEntity account = this.lockAccount(branchCode, accountNumber, LockModeType.PESSIMISTIC_READ);
+        if (this.isAccountAvailable(branchCode, accountNumber) == false) {
+            throw new IllegalStateException("The specified account is not available.");
+        }
+
+        final AccountDepositEventEntity depositEvent = new AccountDepositEventEntity();
+        depositEvent.init(AccountDepositEventEntity.paylod(amount), account.getEntityName(), account.getEntityId());
+        this.entityManager.persist(depositEvent);
+    }
+
+    @Transactional
+    public void withdrawAccount(final String branchCode, final String accountNumber, final int amount) {
+
+        final AccountEntity account = this.lockAccount(branchCode, accountNumber, LockModeType.PESSIMISTIC_WRITE);
+        if (this.isAccountAvailable(branchCode, accountNumber) == false) {
+            throw new IllegalStateException("The specified account is not available.");
+        }
+
+        // TODO check barance
+
+        final AccountWithdrawalEventEntity withdrawalEvent = new AccountWithdrawalEventEntity();
+        withdrawalEvent.init(AccountWithdrawalEventEntity.paylod(amount), account.getEntityName(), account.getEntityId());
+        this.entityManager.persist(withdrawalEvent);
     }
 }
