@@ -13,12 +13,12 @@ public class TestContext {
 
     @Bean
     @ServiceConnection
-    public PostgreSQLContainer<?> postgresql() {
+    public PostgreSQLContainer<?> postgreSQLContainer() {
 
         final String imageName = "public.ecr.aws/docker/library/postgres:16.4";
-        final PostgreSQLContainer<?> postgresql = new PostgreSQLContainer<>(
+        final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>(
                 DockerImageName.parse(imageName).asCompatibleSubstituteFor("postgres"));
-        postgresql.withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(imageName)));
-        return postgresql;
+        postgreSQLContainer.withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(imageName)));
+        return postgreSQLContainer;
     }
 }

@@ -5,9 +5,29 @@ CREATE OR REPLACE FUNCTION generate_id(tm TIMESTAMP(3), tx BIGINT) RETURNS UUID 
     )::UUID
 $$LANGUAGE SQL IMMUTABLE STRICT;
 
-CREATE TABLE event (
+CREATE TABLE entity_base (
     tm TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT statement_timestamp(),
     tx BIGINT NOT NULL DEFAULT txid_current(),
     id UUID NOT NULL GENERATED ALWAYS AS (generate_id(tm, tx)) STORED,
+    name VARCHAR NOT NULL,
     PRIMARY KEY (id)
 ); 
+
+CREATE TABLE event (
+    id UUID NOT NULL,
+    name VARCHAR NOT NULL,
+    targetId UUID NOT NULL,
+    payload JSONB,
+    FOREIGN KEY (id) REFERENCES entity_base(id),
+    FOREIGN KEY (targetId) REFERENCES entity_base(id),
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE account (
+    id UUID NOT NULL,
+    branch_code CHAR(3) NOT NULL,
+    account_number CHAR(7) NOT NULL,
+    FOREIGN KEY (id) REFERENCES entity_base(id),
+    UNIQUE (branch_code, account_number),
+    PRIMARY KEY (id)
+);
