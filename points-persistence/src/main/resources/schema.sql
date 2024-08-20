@@ -1,35 +1,20 @@
 --
-create function generate_id() returns uuid as $$
-    with ct as ( select to_char(current_timestamp, 'YYYYMMDDHH24MISSUS') as t)
-    select
-        (  substring(t from 1 for 8)
-        || '-' 
-        || substring(t from 9 for 4)
-        || '-' 
-        || substring(t from 13 for 4)
-        || '-' 
-        || substring(t from 17 for 4)
-        || '-' 
-        || lpad(to_hex((random() * (2^(12*4-1)))::bigint), 12, '0')
-        )::uuid
-    from ct
-$$ language sql;
- 
---
-create table EVENT_STORE (
-    EVENT_ID uuid not null default generate_id(),
-    EVENT_TYPE varchar not null,
-    EVENT_PAYLOAD jsonb,
-    TARGET_TYPE varchar not null,
-    TARGET_ID uuid not null,
-    primary key (EVENT_ID)
+CREATE TABLE event (
+    event_time TIMESTAMP NOT NULL default statement_timestamp(),
+    event_txid BIGINT NOT NULL default txid_current(),
+    event_wxyz DOUBLE PRECISION NOT NULL default random(),
+    event_name VARCHAR NOT NULL,
+    event_payload JSONB,
+    target_id UUID NOT NULL,
+    target_name VARCHAR NOT NULL,
+    PRIMARY KEY (event_time, event_txid, event_wxyz)
 );
 
 --
-create table ACCOUNT (
-    ENTITY_ID uuid not null default generate_id(),
-    BRANCH_CODE char(3) not null,
-    ACCOUNT_NUMBER char(7) not null,
-    constraint UQ_ACCOUNT unique (BRANCH_CODE, ACCOUNT_NUMBER),
-    primary key (ENTITY_ID)
+CREATE TABLE account (
+    entity_id UUID NOT NULL DEFAULT gen_random_uuid(),
+    branch_code CHAR(3) NOT NULL,
+    account_number CHAR(7) NOT NULL,
+    CONSTRAINT uq_branch_account UNIQUE (branch_code, account_number),
+    PRIMARY KEY (entity_id)
 );

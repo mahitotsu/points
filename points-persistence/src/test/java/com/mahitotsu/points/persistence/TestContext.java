@@ -9,7 +9,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootApplication
-public class TestContextConfiguration {
+public class TestContext {
 
     @Bean
     @ServiceConnection
