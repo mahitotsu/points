@@ -1,10 +1,10 @@
-package com.mahitotsu.points.persistence.account;
+package com.mahitotsu.points.account;
 
 import java.beans.ConstructorProperties;
 import java.util.UUID;
 
-import com.mahitotsu.points.persistence.account.AccountStatusChangeEvent.Payload;
-import com.mahitotsu.points.persistence.eventstore.Event;
+import com.mahitotsu.points.account.AccountStatusChangeEvent.Payload;
+import com.mahitotsu.points.eventstore.Event;
 
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.mahitotsu.points.persistence.account;
+package com.mahitotsu.points.account;
 
 import java.util.UUID;
 

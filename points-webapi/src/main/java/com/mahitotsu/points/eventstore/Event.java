@@ -1,4 +1,4 @@
-package com.mahitotsu.points.persistence.eventstore;
+package com.mahitotsu.points.eventstore;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
