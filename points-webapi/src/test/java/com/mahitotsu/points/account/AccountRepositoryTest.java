@@ -19,16 +19,18 @@ public class AccountRepositoryTest extends TestBase {
     private PlatformTransactionManager transactionManager;
 
     @Test
-    public void testOpenAndCloseAccount() {
+    public void testOpenAndCloseAccount() throws NullPointerException {
 
         for (int i = 0; i < 100; i++) {
-            final Event event = new Event();
-            new TransactionTemplate(this.transactionManager).execute((tx) -> {
-                this.entityManager.persist(event);
-                return event;
+            final Event event = new TransactionTemplate(this.transactionManager).execute((tx) -> {
+                final Event a = new Event();
+                this.entityManager.persist(a);
+                return a;
             });
-            System.out.println(event.toString());
+            new TransactionTemplate(this.transactionManager).executeWithoutResult((tx) -> {
+                final Event e = this.entityManager.find(Event.class, event.getId());
+                System.out.println(e);
+            });
         }
-
     }
 }
