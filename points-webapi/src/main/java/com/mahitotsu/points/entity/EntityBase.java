@@ -24,10 +24,10 @@ public class EntityBase {
     private UUID id;
 
     @Column(name = "tx", insertable = false, updatable = false, nullable = false)
-    private Long tx;
+    private long tx;
 
     @Column(name = "sq", insertable = false, updatable = false, nullable = false)
-    private Long sq;
+    private int sq;
 
     @Column(name = "ts", insertable = false, updatable = false, nullable = false)
     private LocalDateTime ts;
