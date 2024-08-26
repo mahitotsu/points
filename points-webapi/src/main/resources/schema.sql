@@ -5,6 +5,7 @@ VOLATILE
 AS '
 BEGIN
     CREATE TEMP SEQUENCE IF NOT EXISTS tempseq AS integer CYCLE;
+    ALTER SEQUENCE tempseq RESTART WITH 1;
 END;
 ';
 
@@ -25,16 +26,15 @@ IMMUTABLE
 RETURNS NULL ON NULL INPUT
 AS '
 DECLARE
-    unix_ms bigint;
-    microseconds integer;
+    unix_t char(12);
+    rand_a char(3);
+    rand_b char(16);
     result uuid;
 BEGIN
-    unix_ms := (EXTRACT(EPOCH FROM ts) * 1000)::bigint;
-    microseconds := (EXTRACT(MICROSECONDS FROM ts)::integer % 1000);
-    result := (
-        lpad(to_hex(unix_ms), 12, ''0'') || ''7'' || lpad(to_hex(microseconds), 3, ''0'')  ||
-        ''8'' || lpad(to_hex(tx), 8, ''0'') || lpad(to_hex(sq), 7, ''0'')
-    )::uuid;
+    unix_t := lpad(to_hex((EXTRACT(EPOCH FROM ts) * 1000)::bigint), 12, ''0'');
+    rand_a := lpad(to_hex(EXTRACT(MICROSECONDS FROM ts)::integer % 1000), 3, ''0'');
+    rand_b := to_hex((''x'' || right(md5(to_hex(tx) || to_hex(sq)), 16))::bit(64)::bigint & ~(3::bigint << 62) | (2::bigint << 62));
+    result := ( unix_t || ''7'' || rand_a || rand_b)::uuid;
     RETURN result;
 END;
 ';

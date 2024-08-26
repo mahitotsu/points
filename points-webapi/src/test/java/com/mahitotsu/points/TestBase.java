@@ -1,6 +1,5 @@
 package com.mahitotsu.points;
 
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -40,16 +39,13 @@ public class TestBase {
             queue.add(es.submit(() -> {
                 final TransactionTemplate txOps = new TransactionTemplate(
                         this.beanFactory.getBean(PlatformTransactionManager.class));
-                for (int j = 0; j < 9; j++) {
+                for (int j = 0; j < 10; j++) {
                     final EntityManager entityManager = this.beanFactory.getBean(EntityManager.class);
-                    final UUID id = txOps.execute(tx -> {
-                        final EntityBase eb = new EntityBase();
-                        entityManager.persist(eb);
-                        return eb.getId();
-                    });
                     txOps.executeWithoutResult(tx -> {
-                        final EntityBase eb = entityManager.find(EntityBase.class, id);
-                        System.out.println(eb);
+                        for (int k = 0; k < 9; k++) {
+                            final EntityBase entity = new EntityBase();
+                            entityManager.persist(entity);
+                        }
                     });
                 }
                 return 1;
@@ -60,5 +56,9 @@ public class TestBase {
             queue.take().get();
         }
         es.shutdown();
+
+        this.beanFactory.getBean(EntityManager.class).createQuery("SELECT e FROM EntityBase e", EntityBase.class)
+                .getResultList()
+                .forEach(e -> System.out.println(e.getId()));
     }
 }
