@@ -5,9 +5,10 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.aop.AfterReturningAdvice;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -20,7 +21,9 @@ import com.mahitotsu.points.Main;
 public class EntityConfig {
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(final DataSource dataSource) {
+    @ConfigurationProperties(prefix = "spring.jpa")
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(final EntityManagerFactoryBuilder builder,
+            final DataSource dataSource) {
 
         final ProxyFactory pf = new ProxyFactory();
         pf.setInterfaces(DataSource.class);
@@ -40,10 +43,9 @@ public class EntityConfig {
             }
         });
 
-        final LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
-        emf.setDataSource(DataSource.class.cast(pf.getProxy()));
-        emf.setPersistenceProviderClass(HibernatePersistenceProvider.class);
-        emf.setPackagesToScan(Main.class.getPackage().getName());
-        return emf;
+        return builder
+                .dataSource(DataSource.class.cast(pf.getProxy()))
+                .packages(Main.class)
+                .build();
     }
 }

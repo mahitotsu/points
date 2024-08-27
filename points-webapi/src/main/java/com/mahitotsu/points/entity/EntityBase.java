@@ -4,18 +4,31 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Value;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "entities")
-@Value
-@NoArgsConstructor(force = true)
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "name", discriminatorType = DiscriminatorType.STRING)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter(AccessLevel.PUBLIC)
+@Setter(AccessLevel.NONE)
+@ToString
+@EqualsAndHashCode
 public class EntityBase {
 
     @Id
@@ -31,4 +44,7 @@ public class EntityBase {
 
     @Column(name = "ts", insertable = false, updatable = false, nullable = false)
     private LocalDateTime ts;
+
+    @Column(name = "name", insertable = false, updatable = false, nullable = false)
+    private String name;
 }

@@ -45,5 +45,18 @@ CREATE TABLE entities (
     tx integer NOT NULL DEFAULT txid_current()::integer,
     sq integer NOT NULL DEFAULT  next_seq_val(),
     id uuid NOT NULL GENERATED ALWAYS AS (gen_uuid_for_entity(ts, tx, sq)) STORED,
+    name varchar NOT NULL,
+    UNIQUE (ts, tx, sq),
+    PRIMARY KEY (id)
+);
+
+--
+CREATE TABLE accounts (
+    id uuid NOT NULL,
+    branch_code char(3) NOT NULL,
+    account_number char(7) NOT NULL,
+    status smallint NOT NULL,
+    UNIQUE (branch_code, account_number),
+    FOREIGN KEY (id) REFERENCES entities (id),
     PRIMARY KEY (id)
 );
