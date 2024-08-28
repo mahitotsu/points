@@ -15,9 +15,13 @@ public class AccountRepositoryTest extends TestBase {
     @Test
     public void testOpenAndCloseAccount() {
 
-        final Account account = this.accountRepository.openAccount("001");
+        final String branchCode = "001";
+        final String accountNumber = this.accountRepository.openAccount(branchCode);
 
-        assertNotNull(account);
-        System.out.println(account);
+        assertNotNull(accountNumber);
+        assertTrue(this.accountRepository.isAccountActive(branchCode, accountNumber));
+
+        this.accountRepository.closeAccount(branchCode, accountNumber);
+        assertFalse(this.accountRepository.isAccountActive(branchCode, accountNumber));
     }
 }

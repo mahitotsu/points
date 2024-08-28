@@ -42,35 +42,59 @@ public class AccountRepository {
         return this.getAccount(branchCode, "0000000");
     }
 
-    private Account findLastAccount(final String branchCode) {
+    private String getNextAccountNumber(final String branchCode) {
         try {
-            return this.entityManager.createQuery("""
-                    SELECT a FROM Account a
+            final String lastAccountNumber = this.entityManager.createQuery("""
+                    SELECT a.accountNumber FROM Account a
                      WHERE a.branchCode = :branchCode
                      ORDER BY a.accountNumber desc
-                    """, Account.class)
+                    """, String.class)
                     .setParameter("branchCode", branchCode)
                     .setMaxResults(1)
                     .getResultList().get(0);
+            final String nextAccountNumber = String.format("%07d",
+                    Integer.parseInt(lastAccountNumber) + 1);
+            return nextAccountNumber;
         } catch (NoSuchElementException e) {
             return null;
         }
     }
 
     @Transactional
-    public Account openAccount(final String branchCode) {
+    public String openAccount(final String branchCode) {
 
-        final Account branchAccount = this.getBranchAccount(branchCode);
-        if (!this.entityRepository.lockEntity(branchAccount.getId(), LockModeType.PESSIMISTIC_WRITE)) {
-            throw new IllegalStateException("An invalid state has occurred.");
+        final Account account = this.getBranchAccount(branchCode);
+        if (account == null) {
+            throw new IllegalArgumentException("The specified branch code is not valid.");
         }
 
-        final Account lastAccount = this.findLastAccount(branchCode);
-        final String nextAccountNumber = String.format("%07d", Integer.parseInt(lastAccount.getAccountNumber()) + 1);
+        if (!this.entityRepository.lockEntity(account.getId(), LockModeType.PESSIMISTIC_WRITE)) {
+            throw new IllegalStateException("An invalid state has occurred.");
+        }
+        final String nextAccountNumber = this.getNextAccountNumber(branchCode);
+        this.entityManager.persist(new Account(branchCode, nextAccountNumber, Status.OPENED));
 
-        final Account newAccount = new Account(branchCode, nextAccountNumber, Status.OPENED);
-        this.entityManager.persist(newAccount);
-        this.entityManager.refresh(newAccount);
-        return newAccount;
+        return nextAccountNumber;
+    }
+
+    @Transactional
+    public void closeAccount(final String branchCode, final String accountNumber) {
+
+        final Account account = this.getAccount(branchCode, accountNumber);
+        if (account == null) {
+            return;
+        }
+
+        if (!this.entityRepository.lockEntity(account.getId(), LockModeType.PESSIMISTIC_WRITE)) {
+            throw new IllegalStateException("An invalid state has occurred.");
+        }
+        account.setStatus(Status.CLOSED);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isAccountActive(final String branchCode, final String accountNumber) {
+
+        final Account account = this.getAccount(branchCode, accountNumber);
+        return account != null && account.getStatus() == Status.OPENED;
     }
 }

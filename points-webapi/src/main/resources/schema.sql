@@ -40,6 +40,17 @@ CREATE TABLE entities (
 );
 
 --
+CREATE TABLE events (
+    id uuid NOT NULL,
+    type varchar NOT NULL,
+    target_id uuid NOT NULL,
+    payload jsonb,
+    FOREIGN KEY (id) REFERENCES entities (id),
+    FOREIGN KEY (target_id) REFERENCES entities (id),
+    PRIMARY KEY(id)
+);
+
+--
 CREATE TABLE accounts (
     id uuid NOT NULL,
     branch_code char(3) NOT NULL,

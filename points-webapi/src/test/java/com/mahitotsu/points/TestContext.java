@@ -12,7 +12,7 @@ import org.testcontainers.utility.DockerImageName;
 public class TestContext {
 
     @Bean
-    @ServiceConnection("postgres")
+    @ServiceConnection
     public PostgreSQLContainer<?> postgreSQLContainer() {
 
         final String imageName = "public.ecr.aws/docker/library/postgres:16.4";
