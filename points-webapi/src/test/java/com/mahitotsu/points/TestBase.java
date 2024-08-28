@@ -9,5 +9,4 @@ import org.springframework.boot.test.context.SpringBootTest;
 })
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 public abstract class TestBase {
-
 }

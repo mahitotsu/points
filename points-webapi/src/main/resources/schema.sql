@@ -1,14 +1,3 @@
-CREATE OR REPLACE FUNCTION init_session()
-RETURNS void
-LANGUAGE plpgsql
-VOLATILE
-AS '
-BEGIN
-    CREATE TEMP SEQUENCE IF NOT EXISTS tempseq AS integer CYCLE;
-    ALTER SEQUENCE tempseq RESTART WITH 1;
-END;
-';
-
 CREATE OR REPLACE FUNCTION next_seq_val()
 RETURNS bigint
 LANGUAGE plpgsql 
@@ -19,7 +8,7 @@ BEGIN
 END;
 ';
 
-CREATE OR REPLACE FUNCTION gen_uuid_for_entity(ts timestamp, tx integer, sq integer)
+CREATE OR REPLACE FUNCTION gen_uuid_for_entity(ts timestamp, tx bigint , sq bigint)
 RETURNS uuid
 LANGUAGE plpgsql
 IMMUTABLE
@@ -42,8 +31,8 @@ END;
 --
 CREATE TABLE entities (
     ts timestamp NOT NULL DEFAULT statement_timestamp(),
-    tx integer NOT NULL DEFAULT txid_current()::integer,
-    sq integer NOT NULL DEFAULT  next_seq_val(),
+    tx bigint NOT NULL DEFAULT txid_current(),
+    sq bigint NOT NULL DEFAULT  next_seq_val(),
     id uuid NOT NULL GENERATED ALWAYS AS (gen_uuid_for_entity(ts, tx, sq)) STORED,
     name varchar NOT NULL,
     UNIQUE (ts, tx, sq),
