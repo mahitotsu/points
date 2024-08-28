@@ -21,30 +21,30 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "entities")
+@Table(name = "entity_base")
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "name", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "nm", discriminatorType = DiscriminatorType.STRING)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.NONE)
 @ToString
 @EqualsAndHashCode
-public class EntityBase {
+public abstract class EntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", insertable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "tx", insertable = false, updatable = false, nullable = false)
-    private long tx;
-
-    @Column(name = "sq", insertable = false, updatable = false, nullable = false)
-    private int sq;
-
-    @Column(name = "ts", insertable = false, updatable = false, nullable = false)
+    @Column(name = "ts", insertable = false, updatable = false)
     private LocalDateTime ts;
 
-    @Column(name = "name", insertable = false, updatable = false, nullable = false)
-    private String name;
+    @Column(name = "tx", insertable = false, updatable = false)
+    private Long tx;
+
+    @Column(name = "sq", insertable = false, updatable = false)
+    private Long sq;
+
+    @Column(name = "nm", insertable = false, updatable = false)
+    private String nm;
 }

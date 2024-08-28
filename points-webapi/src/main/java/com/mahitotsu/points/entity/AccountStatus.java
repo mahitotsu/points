@@ -1,11 +1,7 @@
-package com.mahitotsu.points.account;
-
-import com.mahitotsu.points.entity.EntityBase;
+package com.mahitotsu.points.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,27 +12,25 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "accounts")
+@Table
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.NONE)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Account extends EntityBase {
+public class AccountStatus extends EntityBase {
 
     public static enum Status {
         OPENED, CLOSED,
     }
 
-    @Column(name = "branch_code", updatable = false, nullable = false)
+    @Column
     private String branchCode;
 
-    @Column(name = "account_number", updatable = false, nullable = false)
+    @Column
     private String accountNumber;
 
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
-    @Setter(AccessLevel.PUBLIC)
+    @Column
     private Status status;
 }

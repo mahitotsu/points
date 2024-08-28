@@ -8,5 +8,5 @@ import org.springframework.boot.test.context.SpringBootTest;
         "spring.sql.init.mode=always",
 })
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-public abstract class TestBase {
+public class TestBase {
 }

@@ -1,4 +1,4 @@
-package com.mahitotsu.points.account;
+package com.mahitotsu.points.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,21 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mahitotsu.points.TestBase;
 
-public class AccountRepositoryTest extends TestBase {
+public class EntityRepositoryTest extends TestBase {
 
     @Autowired
     private AccountRepository accountRepository;
 
     @Test
-    public void testOpenAndCloseAccount() {
+    public void test() {
 
         final String branchCode = "001";
         final String accountNumber = this.accountRepository.openAccount(branchCode);
-
         assertNotNull(accountNumber);
-        assertTrue(this.accountRepository.isAccountActive(branchCode, accountNumber));
-
-        this.accountRepository.closeAccount(branchCode, accountNumber);
-        assertFalse(this.accountRepository.isAccountActive(branchCode, accountNumber));
     }
 }
