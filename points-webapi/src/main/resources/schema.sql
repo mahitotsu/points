@@ -4,4 +4,4 @@ LANGUAGE plpgsql
 VOLATILE AS '
 BEGIN
     RETURN nextval(''tempseq'');
-END';
+END;';
