@@ -18,9 +18,8 @@ public class AccountRepository {
 
     public String openAccount(final String branchCode) {
 
-        final AccountStatus accountStatus = new AccountStatus("001", "1234567", Status.OPENED);
+        final AccountStatus accountStatus = new AccountStatus(branchCode, "1234567", Status.OPENED);
         this.entityManager.persist(accountStatus);
-        this.entityManager.refresh(accountStatus);
 
         return accountStatus.getAccountNumber();
     }

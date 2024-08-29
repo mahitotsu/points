@@ -2,6 +2,8 @@ package com.mahitotsu.points.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,12 +27,13 @@ public class AccountStatus extends EntityBase {
         OPENED, CLOSED,
     }
 
-    @Column
+    @Column(columnDefinition = "char(3)")
     private String branchCode;
 
-    @Column
+    @Column(columnDefinition = "char(7)")
     private String accountNumber;
 
+    @Enumerated(EnumType.ORDINAL)
     @Column
     private Status status;
 }

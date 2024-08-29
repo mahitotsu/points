@@ -3,16 +3,12 @@ package com.mahitotsu.points.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.DiscriminatorType;
-import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.Table;
+import jakarta.persistence.MappedSuperclass;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,10 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Entity
-@Table(name = "entity_base")
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "nm", discriminatorType = DiscriminatorType.STRING)
+@MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.NONE)
@@ -32,17 +25,21 @@ import lombok.ToString;
 public abstract class EntityBase {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id", insertable = false, updatable = false)
+    @ColumnDefault("gen_random_uuid()")
     private UUID id;
 
     @Column(name = "ts", insertable = false, updatable = false)
+    @ColumnDefault("statement_timestamp()")
     private LocalDateTime ts;
 
     @Column(name = "tx", insertable = false, updatable = false)
+    @ColumnDefault("txid_current()")
     private Long tx;
 
     @Column(name = "sq", insertable = false, updatable = false)
+    @ColumnDefault("nextval_tempseq()")
     private Long sq;
 
     @Column(name = "nm", insertable = false, updatable = false)
