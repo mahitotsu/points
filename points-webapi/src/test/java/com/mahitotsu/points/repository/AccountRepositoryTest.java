@@ -11,7 +11,7 @@ public class AccountRepositoryTest extends TestBase {
     private AccountRepository accountRepository;
 
     @Test
-    public void testOpenAndCloseAccount() {
+    public void test() {
 
         this.accountRepository.openAccount("001");
     }
